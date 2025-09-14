@@ -106,7 +106,7 @@ def elevenlabs_tts_provider() -> TTSProvider:
             model_id=model,
             voice_id=voice,
             output_format=to_specific_audio_format(format),
-            # TODO: Voice settings etc. from kwargs
+            **kwargs,
         )
         async for value in stream:
             result += value
