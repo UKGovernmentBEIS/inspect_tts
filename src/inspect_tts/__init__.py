@@ -1,10 +1,7 @@
-"""Package for supporting audio compliance evals."""
+"""An Inspect extension for text-to-speech."""
 
 from inspect_tts._text_to_speech import text_to_speech
-from inspect_tts._tts_provider import TTSProvider, azure_openai_tts_provider
 
 __all__ = [
     "text_to_speech",
-    "TTSProvider",
-    "azure_openai_tts_provider",
 ]
