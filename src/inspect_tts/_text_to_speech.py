@@ -3,19 +3,21 @@ import os
 import re
 from typing import Any, Literal
 
-import httpx
 from inspect_ai.model import ChatMessage, ContentAudio, ContentReasoning, ContentText
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 from inspect_ai.util import concurrency
 
-from inspect_tts._tts_provider import TTSProvider, azure_openai_tts_provider
-
-AudioFormat = Literal["wav", "mp3"]
+from inspect_tts._audio import AudioFormat
+from inspect_tts._tts_provider import (
+    TTSProvider,
+    azure_openai_tts_provider,
+    elevenlabs_tts_provider,
+)
 
 
 @solver
 def text_to_speech(
-    provider: Literal["azure_openai"],
+    provider: Literal["azure_openai", "elevenlabs"],
     model: str,
     voice: str,
     format: AudioFormat,
@@ -48,7 +50,7 @@ def text_to_speech(
         # 2. Get file name to search for and save audio
         file_name = _create_file_name(text, model, voice, format)
 
-        # 2. Check for existing audio file and load it if it exists
+        # 3. Check for existing audio file and load it if it exists
         audio = None
         if audio_dir is not None:
             file_path = os.path.join(audio_dir, file_name)
@@ -56,11 +58,10 @@ def text_to_speech(
                 with open(file_path, "rb") as f:
                     audio = f.read()
 
-        # 3. Generate audio if not already available
+        # 4. Generate audio if not already available
         if audio is None:
             # Get TTS provider
-            client = httpx.AsyncClient()
-            tts_provider = _get_tts_provider(provider, client)
+            tts_provider = _get_tts_provider(provider)
 
             # Generate audio
             async with concurrency(provider, 10):
@@ -72,9 +73,12 @@ def text_to_speech(
             if save_dir is not None:
                 _save_audio(audio, save_dir, file_name)
 
-        # 4. Replace the last message's text with audio
+        # 5. Replace the last message's text with audio
+        base_format = _get_base_audio_format(format)
         state.messages[-1].content = [
-            ContentAudio(audio=_bytes_to_data_url(audio, format), format=format)
+            ContentAudio(
+                audio=_bytes_to_data_url(audio, base_format), format=base_format
+            )
         ]
 
         return state
@@ -82,19 +86,18 @@ def text_to_speech(
     return solve
 
 
-def _get_tts_provider(provider: str, client: httpx.AsyncClient) -> TTSProvider:
+def _get_tts_provider(provider: str) -> TTSProvider:
     """Get the appropriate TTS provider based on the provider name."""
-    providers = {
-        "azure_openai": azure_openai_tts_provider(client),
-    }
-
-    if provider in providers:
-        return providers[provider]
-    else:
-        raise ValueError(
-            f"Provider {provider} is not supported for text-to-speech. "
-            f"The supported providers are: {', '.join(providers.keys())}"
-        )
+    match provider:
+        case "azure_openai":
+            return azure_openai_tts_provider()
+        case "elevenlabs":
+            return elevenlabs_tts_provider()
+        case _:
+            raise ValueError(
+                f"Provider {provider} is not supported for text-to-speech. "
+                f"The supported providers are: azure_openai, elevenlabs."
+            )
 
 
 def _extract_text_from_message(message: ChatMessage) -> str:
@@ -163,3 +166,15 @@ def _bytes_to_data_url(audio: bytes, format: AudioFormat) -> str:
     base64_string = base64_encoded.decode("ascii")
     data_url = f"data:audio/{format};base64,{base64_string}"
     return data_url
+
+
+def _get_base_audio_format(format: str) -> AudioFormat:
+    if format.startswith("mp3"):
+        return "mp3"
+    elif format.startswith("wav"):
+        return "wav"
+    else:
+        raise ValueError(
+            f"Unsupported audio format: {format} for storing in Inspect message. "
+            "Supported formats are 'wav' and 'mp3'."
+        )
