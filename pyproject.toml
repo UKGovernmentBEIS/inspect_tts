@@ -31,10 +31,16 @@ package = true
 inspect-evals = { git = "https://github.com/UKGovernmentBEIS/inspect_evals" }
 
 [tool.hatch.build.targets.sdist]
-include = ["src/inspect_tts"]
+include = [
+    "src/inspect_tts",
+    "src/inspect_tts/py.typed",
+]
 
 [tool.hatch.build.targets.wheel]
-include = ["src/inspect_tts"]
+include = [
+    "src/inspect_tts",
+    "src/inspect_tts/py.typed",
+]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/inspect_tts" = "inspect_tts"
