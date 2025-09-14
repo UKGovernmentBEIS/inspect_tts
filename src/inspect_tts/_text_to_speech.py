@@ -62,7 +62,7 @@ def text_to_speech(
             tts_provider = _get_tts_provider(provider)
 
             # Generate audio
-            async with concurrency(provider, 10):
+            async with concurrency(provider, 2):
                 audio = await tts_provider(
                     model, text, voice, format, **tts_provider_kwargs
                 )
