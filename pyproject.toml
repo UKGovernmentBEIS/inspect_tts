@@ -1,0 +1,64 @@
+[project]
+name = "inspect-tts"
+version = "0.1.0"
+description = "An Inspect extension for text-to-speech"
+authors = [{ name = "UK AI Security Institute" }]
+requires-python = ">=3.10,<4"
+readme = "README.md"
+dependencies = [
+  "azure-identity>=1.25.0",
+  "elevenlabs>=2.5.0",
+  "inspect-ai>=0.3.86,<0.4",
+  "openai>=1.65.4,<2",
+]
+
+[project.entry-points.inspect_ai]
+inspect_tts = "inspect_tts._registry"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.9.0,<2",
+  "ruff==0.11.11",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+package = true
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src/inspect_tts",
+  "src/inspect_tts/py.typed",
+]
+
+[tool.hatch.build.targets.wheel]
+include = [
+  "src/inspect_tts",
+  "src/inspect_tts/py.typed",
+]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/inspect_tts" = "inspect_tts"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # flake8
+  "D",   # pydocstyle
+  "I",   # isort
+]
+ignore = [
+  "D212",  # multi-line-summary-first-line
+]
+exclude = ["src/inspect_tts/_registry.py"]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/*" = ["D10"]  # undocumented-(public|magic)-*
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
