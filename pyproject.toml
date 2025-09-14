@@ -11,6 +11,9 @@ dependencies = [
   "openai>=1.65.4,<2",
 ]
 
+[project.entry-points.inspect_ai]
+inspect_tts = "inspect_tts._registry"
+
 [dependency-groups]
 dev = [
   "mypy>=1.9.0,<2",
