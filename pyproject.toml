@@ -6,6 +6,7 @@ authors = [{ name = "UK AI Security Institute" }]
 requires-python = ">=3.10,<4"
 readme = "README.md"
 dependencies = [
+  "azure-identity>=1.25.0",
   "elevenlabs>=2.5.0",
   "inspect-ai>=0.3.86,<0.4",
   "openai>=1.65.4,<2",
@@ -18,28 +19,22 @@ inspect_tts = "inspect_tts._registry"
 dev = [
   "mypy>=1.9.0,<2",
   "ruff==0.11.11",
-  "inspect-evals",
 ]
 
 [tool.uv]
-default-groups = [
-    "dev"
-]
+default-groups = ["dev"]
 package = true
-
-[tool.uv.sources]
-inspect-evals = { git = "https://github.com/UKGovernmentBEIS/inspect_evals" }
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/inspect_tts",
-    "src/inspect_tts/py.typed",
+  "src/inspect_tts",
+  "src/inspect_tts/py.typed",
 ]
 
 [tool.hatch.build.targets.wheel]
 include = [
-    "src/inspect_tts",
-    "src/inspect_tts/py.typed",
+  "src/inspect_tts",
+  "src/inspect_tts/py.typed",
 ]
 
 [tool.hatch.build.targets.wheel.sources]
